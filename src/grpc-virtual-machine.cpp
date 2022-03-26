@@ -284,6 +284,7 @@ void grpc_virtual_machine::do_write_memory(uint64_t address, const unsigned char
     WriteMemoryRequest request;
     request.set_address(address);
     request.set_data(std::string(reinterpret_cast<const char*>(data), length));
+    request.set_is_path(false);
     ClientContext context;
     Void response;
     check_status(m_stub->get_stub()->WriteMemory(&context, request, &response));

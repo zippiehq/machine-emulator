@@ -485,9 +485,10 @@ class handler_WriteMemory final: public handler<WriteMemoryRequest, Void> {
         }
         uint64_t address = req->address();
         const auto &data = req->data();
+        const bool is_path = req->is_path();
         Void resp;
         hctx.m->write_memory(address,
-            reinterpret_cast<const unsigned char *>(data.data()), data.size());
+            reinterpret_cast<const unsigned char *>(data.data()), data.size(), is_path);
         return finish_ok(writer, resp);
     }
 

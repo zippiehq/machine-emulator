@@ -268,7 +268,7 @@ public:
     /// \details The entire chunk, from \p address to \p address + \p length must
     /// be inside the same PMA region. Moreover, this PMA must be a memory PMA,
     /// and not a device PMA.
-    void write_memory(uint64_t address, const unsigned char *data, size_t length);
+    void write_memory(uint64_t address, const unsigned char *data, size_t length, bool is_path = false);
 
     /// \brief Reads the value of a general-purpose register.
     /// \param i Register index. Between 0 and X_REG_COUNT-1, inclusive.
