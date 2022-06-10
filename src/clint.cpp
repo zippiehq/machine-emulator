@@ -120,26 +120,10 @@ static bool clint_peek(const pma_entry &pma, const machine &m,
         "code expects msip0, mtimcmp, and mtime to be in different pages");
     // There are 3 non-pristine pages: base(CLINT_MSIP0_REL_ADDR), base(CLINT_MTIMECMP_REL_ADDR), and base(CLINT_MTIME_REL_ADDR)
     switch (page_offset) {
-        case base(CLINT_MSIP0_REL_ADDR):
-            // This page contains only msip (which is either 0 or 1)
-            // Since we are little-endian, we can simply write the bytes
-            memset(scratch, 0, PMA_PAGE_SIZE);
-            aliased_aligned_write<uint64_t>(scratch +
-                offset(CLINT_MSIP0_REL_ADDR),
-                (m.read_mip() & MIP_MSIP_MASK) == MIP_MSIP_MASK);
-            *page_data = scratch;
-            return true;
         case base(CLINT_MTIMECMP_REL_ADDR):
             memset(scratch, 0, PMA_PAGE_SIZE);
             aliased_aligned_write<uint64_t>(scratch +
                 offset(CLINT_MTIMECMP_REL_ADDR), m.read_clint_mtimecmp());
-            *page_data = scratch;
-            return true;
-        case base(CLINT_MTIME_REL_ADDR):
-            memset(scratch, 0, PMA_PAGE_SIZE);
-            aliased_aligned_write<uint64_t>(scratch +
-                offset(CLINT_MTIME_REL_ADDR),
-                rtc_cycle_to_time(m.read_mcycle()));
             *page_data = scratch;
             return true;
         default:
