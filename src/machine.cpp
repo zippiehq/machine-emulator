@@ -1295,6 +1295,13 @@ bool machine::update_merkle_tree(void) const {
             }
         }
     }
+    hash_type empty_hash;
+    { 
+        machine_merkle_tree::hasher_type h;
+        const unsigned char *empty_page_data = reinterpret_cast<const unsigned char *>(calloc(1, PMA_PAGE_SIZE));
+        m_t.get_page_node_hash(h, empty_page_data, empty_hash);
+        free((void *) empty_page_data);
+    }
     // Now go over all PMAs and updating the Merkle tree
     m_t.begin_update();
     for (auto &pma : m_s.pmas) {
@@ -1335,14 +1342,29 @@ bool machine::update_merkle_tree(void) const {
                             return false;
                         }
                         if (page_data) {
+                          const unsigned char *p = page_data;
+                          bool is_empty = true;
+                          while (p < page_data + PMA_PAGE_SIZE) {
+                              if (*p != '\0') {
+                                  is_empty = false;
+                              }
+                              p++;
+                          }
+                          if (is_empty) {
+                            std::lock_guard<std::mutex> lock(updatex);
+                            if (!m_t.update_page_node_hash(page_address, empty_hash)) {
+                                return false;
+                            }
+                          } else {
                             hash_type hash;
                             m_t.get_page_node_hash(h, page_data, hash);
                             {
-                                std::lock_guard<std::mutex> lock(updatex);
-                                if (!m_t.update_page_node_hash(page_address, hash)) {
-                                    return false;
-                                }
+                              std::lock_guard<std::mutex> lock(updatex);
+                              if (!m_t.update_page_node_hash(page_address, hash)) {
+                                 return false;
+                              }
                             }
+                          }
                         }
                     }
                     return true;
