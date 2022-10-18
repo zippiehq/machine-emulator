@@ -26,7 +26,20 @@
 #include <thread>
 
 #include <sys/stat.h>
+#include <fcntl.h> // open
+#include <sys/mman.h> // mmap, munmap
+#include <unistd.h> // close
+#include <sys/stat.h> // fstat
+#include <fcntl.h> // open
+#include <errno.h>
 
+#include <string>
+#include <cstring>
+#include <system_error>
+#include <vector>
+#include <variant>
+#include <string>
+#include <stdexcept>
 #include "clint.h"
 #include "dhd.h"
 #include "htif.h"
@@ -1562,7 +1575,23 @@ void machine::read_memory(uint64_t address, unsigned char *data, uint64_t length
     }
 }
 
-void machine::write_memory(uint64_t address, const unsigned char *data, size_t length) {
+void machine::write_memory(uint64_t address, const unsigned char *data, size_t length, bool is_path) {
+    if (is_path) {
+        const std::string path(reinterpret_cast<const char *>(data), length);
+        auto fp = unique_fopen(path.c_str(), "rb", std::nothrow_t{});
+        if (!fp) {
+            throw std::invalid_argument{"file not found"};
+        }
+        fseek(fp.get(), 0, SEEK_END);
+        auto file_length = ftell(fp.get());
+        fseek(fp.get(), 0, SEEK_SET);
+        unsigned char *memory = reinterpret_cast<unsigned char *>(calloc(1, file_length));
+        auto read = fread(memory, 1, file_length, fp.get()); (void) read;
+        this->write_memory(address, reinterpret_cast<const unsigned char*>(memory), file_length, false);
+        free(memory);
+        return;
+    }
+
     pma_entry &pma = find_pma_entry(address, length);
     if (!pma.get_istart_M() || pma.get_istart_E()) {
         throw std::invalid_argument{"address range not entirely in memory PMA"};
