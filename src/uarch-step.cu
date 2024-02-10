@@ -1114,3 +1114,12 @@ template __device__ UArchStepStatus uarch_step(uarch_step_state_access &a);
 
 } // namespace cartesi
 // NOLINTEND(google-readability-casting, misc-const-correctness)
+
+__global__ void rv64i() {
+    cartesi::uarch_step_state_access a;
+    while (cartesi::uarch_step(a) != cartesi::UArchStepStatus::UArchHalted) {}
+}
+
+int main() {
+    rv64i<<<1,1>>>();
+}
