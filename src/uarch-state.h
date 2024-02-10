@@ -40,7 +40,7 @@ struct uarch_state {
     uarch_state &operator=(uarch_state &&other) = delete;
 
     uint64_t pc;                               ///< Program counter.
-    std::array<uint64_t, UARCH_X_REG_COUNT> x; ///< Register file.
+    __device__ std::array<uint64_t, UARCH_X_REG_COUNT> x; ///< Register file.
     uint64_t cycle;                            ///< Cycles counter
     bool halt_flag;
     pma_entry shadow_state; ///< Shadow uarch state

@@ -33,7 +33,7 @@ class uarch_step_state_access : public i_uarch_step_state_access<uarch_step_stat
     /// \param length Length of physical memory region.
     /// \returns Corresponding entry if found, or a sentinel entry
     /// for an empty range.
-    pma_entry &find_memory_pma_entry(uint64_t paddr, size_t length) {
+    __device__ pma_entry &find_memory_pma_entry(uint64_t paddr, size_t length) {
         // First, search microarchitecture private PMA entries
         if (m_us.ram.contains(paddr, length)) {
             return m_us.ram;
@@ -77,13 +77,13 @@ private:
     friend i_uarch_step_state_access<uarch_step_state_access>;
 
     // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
-    void do_push_bracket(bracket_type type, const char *text) {
+    __device__ void do_push_bracket(bracket_type type, const char *text) {
         (void) type;
         (void) text;
     }
 
     // NOLINTNEXTLINE(readability-convert-member-functions-to-static)
-    int do_make_scoped_note(const char *text) {
+    __device__ int do_make_scoped_note(const char *text) {
         (void) text;
         return 0;
     }
@@ -92,40 +92,40 @@ private:
         return m_us.x[reg];
     }
 
-    void do_write_x(int reg, uint64_t val) {
+    __device__ void do_write_x(int reg, uint64_t val) {
         assert(reg != 0);
         m_us.x[reg] = val;
     }
 
-    uint64_t do_read_pc() const {
+    __device__ uint64_t do_read_pc() const {
         return m_us.pc;
     }
 
-    void do_write_pc(uint64_t val) {
+    __device__ void do_write_pc(uint64_t val) {
         m_us.pc = val;
     }
 
-    uint64_t do_read_cycle() const {
+    __device__ uint64_t do_read_cycle() const {
         return m_us.cycle;
     }
 
-    void do_write_cycle(uint64_t val) {
+    __device__ void do_write_cycle(uint64_t val) {
         m_us.cycle = val;
     }
 
-    bool do_read_halt_flag() const {
+    __device__ bool do_read_halt_flag() const {
         return m_us.halt_flag;
     }
 
-    void do_set_halt_flag() {
+    __device__ void do_set_halt_flag() {
         m_us.halt_flag = true;
     }
 
-    void do_reset_halt_flag() {
+    __device__ void do_reset_halt_flag() {
         m_us.halt_flag = false;
     }
 
-    uint64_t do_read_word(uint64_t paddr) {
+    __device__ uint64_t do_read_word(uint64_t paddr) {
         // Find a memory range that contains the specified address
         auto &pma = find_memory_pma_entry(paddr, sizeof(uint64_t));
         if (pma.get_istart_E()) {
@@ -134,7 +134,7 @@ private:
             return read_register(paddr);
         }
         if (!pma.get_istart_R()) {
-            throw std::runtime_error("pma is not readable");
+            //throw std::runtime_error("pma is not readable");
         }
         // Found a writable memory range. Access host memory accordingly.
         const uint64_t hoffset = paddr - pma.get_start();
@@ -145,12 +145,12 @@ private:
     /// \brief Reads a uint64 machine state register mapped to a memory address
     /// \param paddr Address of the state register
     /// \param data Pointer receiving register value
-    uint64_t read_register(uint64_t paddr) {
+    __device__ uint64_t read_register(uint64_t paddr) {
         return uarch_bridge::read_register(paddr, m_s, m_us);
     }
 
     /// \brief Fallback to error on all other word sizes
-    void do_write_word(uint64_t paddr, uint64_t data) {
+    __device__ void do_write_word(uint64_t paddr, uint64_t data) {
         // Find a memory range that contains the specified address
         auto &pma = find_memory_pma_entry(paddr, sizeof(uint64_t));
         if (pma.get_istart_E()) {
@@ -159,7 +159,7 @@ private:
             return write_register(paddr, data);
         }
         if (!pma.get_istart_W()) {
-            throw std::runtime_error("pma is not writable");
+            // throw std::runtime_error("pma is not writable");
         }
         // Found a writable memory range. Access host memory accordingly.
         const uint64_t hoffset = paddr - pma.get_start();
@@ -172,7 +172,7 @@ private:
     /// \brief Writes a uint64 machine state register mapped to a memory address
     /// \param paddr Address of the state register
     /// \param data New register value
-    void write_register(uint64_t paddr, uint64_t data) {
+    __device__ void write_register(uint64_t paddr, uint64_t data) {
         return uarch_bridge::write_register(paddr, m_s, m_us, data);
     }
 };

@@ -26,11 +26,11 @@ namespace cartesi {
 template <typename DERIVED>
 class i_uarch_step_state_access { // CRTP
 
-    DERIVED &derived(void) {
+    __device__ DERIVED &derived(void) {
         return *static_cast<DERIVED *>(this);
     }
 
-    const DERIVED &derived(void) const {
+    __device__ const DERIVED &derived(void) const {
         return *static_cast<const DERIVED *>(this);
     }
 
@@ -38,64 +38,59 @@ public:
     /// \brief Adds an annotation bracket to the log
     /// \param type Type of bracket
     /// \param text String with the text for the annotation
-    void push_bracket(bracket_type type, const char *text) {
+    __device__ void push_bracket(bracket_type type, const char *text) {
         return derived().do_push_bracket(type, text);
     }
 
     /// \brief Adds annotations to the state, bracketing a scope
     /// \param text String with the text for the annotation
     /// \returns An object that, when constructed and destroyed issues an annonation.
-    auto make_scoped_note(const char *text) {
+    __device__ auto make_scoped_note(const char *text) {
         return derived().do_make_scoped_note(text);
     }
 
-    auto read_x(int r) {
+    __device__ auto read_x(int r) {
         return derived().do_read_x(r);
     }
 
-    auto write_x(int r, uint64_t v) {
+    __device__ auto write_x(int r, uint64_t v) {
         return derived().do_write_x(r, v);
     }
 
-    auto read_pc() {
+    __device__ auto read_pc() {
         return derived().do_read_pc();
     }
 
-    auto write_pc(uint64_t v) {
+    __device__ auto write_pc(uint64_t v) {
         return derived().do_write_pc(v);
     }
 
-    auto read_cycle() {
+    __device__ auto read_cycle() {
         return derived().do_read_cycle();
     }
 
-    auto read_halt_flag() {
+    __device__ auto read_halt_flag() {
         return derived().do_read_halt_flag();
     }
 
-    auto set_halt_flag() {
+    __device__ auto set_halt_flag() {
         return derived().do_set_halt_flag();
     }
 
-    auto reset_halt_flag() {
+    __device__ auto reset_halt_flag() {
         return derived().do_reset_halt_flag();
     }
 
-    auto write_cycle(uint64_t v) {
+    __device__ auto write_cycle(uint64_t v) {
         return derived().do_write_cycle(v);
     }
 
-    uint64_t read_word(uint64_t paddr) {
+    __device__ uint64_t read_word(uint64_t paddr) {
         return derived().do_read_word(paddr);
     }
 
-    void write_word(uint64_t paddr, uint64_t data) {
+    __device__ void write_word(uint64_t paddr, uint64_t data) {
         return derived().do_write_word(paddr, data);
-    }
-
-    template <typename T>
-    pma_entry &find_pma_entry(uint64_t paddr) {
-        return derived().template do_find_pma_entry<T>(paddr);
     }
 };
 

@@ -31,20 +31,14 @@ enum class UArchStepStatus : int {
 /// \returns Returns a status code indicating whether and how the microarchitecure was advanced
 /// \details The microarchitecture will not advance if it is at a fixed point
 template <typename STATE_ACCESS>
-UArchStepStatus uarch_step(STATE_ACCESS &a);
+__device__ UArchStepStatus uarch_step(STATE_ACCESS &a);
 
 class uarch_step_state_access;
 class uarch_record_step_state_access;
 class uarch_replay_step_state_access;
 
 // Declaration of explicit instantiation in module uarch-step.cpp
-extern template UArchStepStatus uarch_step(uarch_step_state_access &a);
-
-// Declaration of explicit instantiation in module uarch-step.cpp
-extern template UArchStepStatus uarch_step(uarch_record_step_state_access &a);
-
-// Declaration of explicit instantiation in module uarch-step.cpp
-extern template UArchStepStatus uarch_step(uarch_replay_step_state_access &a);
+extern template __device__ UArchStepStatus uarch_step(uarch_step_state_access &a);
 
 } // namespace cartesi
 
