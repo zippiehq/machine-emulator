@@ -203,4 +203,12 @@ void virtual_machine::do_verify_send_cmio_response(uint16_t reason, const unsign
     machine::verify_send_cmio_response(reason, data, length, root_hash_before, log, root_hash_after);
 }
 
+void virtual_machine::do_set_mmio_callback(cm_mmio_callback callback, void* user_data) {
+    get_machine()->set_mmio_callback(callback, user_data);
+}
+
+void virtual_machine::do_get_mmio_callback(cm_mmio_callback& callback, void*& user_data) const {
+    get_machine()->get_mmio_callback(callback, user_data);
+}
+
 } // namespace cartesi

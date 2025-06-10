@@ -1092,3 +1092,35 @@ cm_error cm_verify_send_cmio_response(const cm_machine *m, uint16_t reason, cons
 } catch (...) {
     return cm_result_failure();
 }
+
+cm_error cm_set_mmio_callback(cm_machine *m, cm_mmio_callback callback, void *user_data) {
+    try {
+        if (m == nullptr) {
+            return CM_ERROR_INVALID_ARGUMENT;
+        }
+        auto *cpp_m = convert_from_c(m);
+        if (cpp_m->is_jsonrpc_virtual_machine()) {
+            abort(); // Abort in JSON-RPC mode
+        }
+        cpp_m->set_mmio_callback(callback, user_data);
+        return CM_ERROR_OK;
+    } catch (...) {
+        return CM_ERROR_RUNTIME_ERROR;
+    }
+}
+
+cm_error cm_get_mmio_callback(const cm_machine *m, cm_mmio_callback *callback, void **user_data) {
+    try {
+        if (m == nullptr || callback == nullptr || user_data == nullptr) {
+            return CM_ERROR_INVALID_ARGUMENT;
+        }
+        auto *cpp_m = convert_from_c(m);
+        if (cpp_m->is_jsonrpc_virtual_machine()) {
+            abort(); // Abort in JSON-RPC mode
+        }
+        cpp_m->get_mmio_callback(*callback, *user_data);
+        return CM_ERROR_OK;
+    } catch (...) {
+        return CM_ERROR_RUNTIME_ERROR;
+    }
+}

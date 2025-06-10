@@ -865,4 +865,16 @@ bool jsonrpc_virtual_machine::do_is_jsonrpc_virtual_machine() const {
     return true;
 }
 
+void jsonrpc_virtual_machine::do_set_mmio_callback(cm_mmio_callback callback, void* user_data) {
+    // For JSON-RPC, we'll need to implement this through the RPC interface
+    // For now, we'll just store the callback and user_data
+    m_mmio_callback = callback;
+    m_mmio_user_data = user_data;
+}
+
+void jsonrpc_virtual_machine::do_get_mmio_callback(cm_mmio_callback& callback, void*& user_data) const {
+    callback = m_mmio_callback;
+    user_data = m_mmio_user_data;
+}
+
 } // namespace cartesi

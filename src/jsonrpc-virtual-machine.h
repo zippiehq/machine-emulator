@@ -102,6 +102,9 @@ public:
     /// \brief Returns address of remote remote server
     const std::string &get_server_address() const;
 
+    void do_set_mmio_callback(cm_mmio_callback callback, void* user_data) override;
+    void do_get_mmio_callback(cm_mmio_callback& callback, void*& user_data) const override;
+
 private:
     machine_config do_get_initial_config() const override;
     i_virtual_machine *do_clone_empty() const override;
@@ -159,6 +162,8 @@ private:
     cleanup_call m_call{cleanup_call::nothing};
     std::string m_address;
     int64_t m_timeout{-1};
+    cm_mmio_callback m_mmio_callback = nullptr;
+    void* m_mmio_user_data = nullptr;
 };
 
 } // namespace cartesi

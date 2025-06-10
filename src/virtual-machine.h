@@ -86,6 +86,8 @@ private:
         const hash_type &root_hash_after) const override;
     void do_verify_send_cmio_response(uint16_t reason, const unsigned char *data, uint64_t length,
         const hash_type &root_hash_before, const access_log &log, const hash_type &root_hash_after) const override;
+    void do_set_mmio_callback(cm_mmio_callback callback, void* user_data) override;
+    void do_get_mmio_callback(cm_mmio_callback& callback, void*& user_data) const override;
 
     machine *get_machine();
     const machine *get_machine() const;

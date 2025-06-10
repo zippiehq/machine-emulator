@@ -42,6 +42,7 @@
 #include "uarch-interpret.h"
 #include "uarch-machine.h"
 #include "virtio-device.h"
+#include "mmio-device.h"
 
 namespace cartesi {
 
@@ -73,6 +74,10 @@ private:
     machine_memory_range_descrs m_mrds;     ///< List of memory ranges returned by get_memory_ranges().
 
     boost::container::static_vector<std::unique_ptr<virtio_device>, VIRTIO_MAX> m_vdevs; ///< Array of VirtIO devices
+    boost::container::static_vector<std::unique_ptr<mmio_device>, VIRTIO_MAX> m_vmdevs; ///< Array of VirtIO devices
+
+    cm_mmio_callback m_mmio_callback{nullptr}; ///< MMIO callback function
+    void *m_mmio_user_data{nullptr};          ///< User data for MMIO callback
 
     static const pma_entry::flags m_dtb_flags;            ///< PMA flags used for DTB
     static const pma_entry::flags m_ram_flags;            ///< PMA flags used for RAM
@@ -448,6 +453,36 @@ public:
     /// \param root_hash_after State hash after response was sent.
     static void verify_send_cmio_response(uint16_t reason, const unsigned char *data, uint64_t length,
         const hash_type &root_hash_before, const access_log &log, const hash_type &root_hash_after);
+
+    /// \brief Sets the MMIO callback for the machine
+    /// \param callback The callback function to be called on MMIO access
+    /// \param user_data User data to be passed to the callback
+    void set_mmio_callback(cm_mmio_callback callback, void *user_data) {
+        m_mmio_callback = callback;
+        m_mmio_user_data = user_data;
+    }
+
+    /// \brief Gets the current MMIO callback for the machine
+    /// \param callback Receives the current callback function
+    /// \param user_data Receives the current user data
+    void get_mmio_callback(cm_mmio_callback &callback, void *&user_data) const {
+        callback = m_mmio_callback;
+        user_data = m_mmio_user_data;
+    }
+
+    /// \brief Calls the MMIO callback if set
+    /// \param device_index Index of the virtio device (0-7)
+    /// \param offset Offset within the device's MMIO region
+    /// \param data Pointer to data being written (for writes) or where to store read data (for reads)
+    /// \param length Length of data in bytes
+    /// \param is_write True if this is a write operation, false for read
+    /// \returns 0 for success, non-zero for error
+    int call_mmio_callback(uint8_t device_index, uint64_t offset, uint8_t *data, uint64_t length, bool is_write) const {
+        if (m_mmio_callback != nullptr) {
+            return m_mmio_callback(device_index, offset, data, length, is_write, m_mmio_user_data);
+        }
+        return 0;
+    }
 };
 
 } // namespace cartesi

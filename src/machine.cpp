@@ -15,6 +15,9 @@
 //
 
 #include "machine.h"
+#include "machine-c-version.h"
+#include "virtio-mmio-driver.h"
+#include "virtio-mmio-device.h"
 
 #include <algorithm>
 #include <cerrno>
@@ -457,7 +460,6 @@ machine::machine(const machine_config &c, const machine_runtime_config &r) : m_c
                             std::make_unique<virtio_net_carrier_slirp>(vdev_config));
 #else
                         throw std::invalid_argument("virtio network user device is unsupported in this platform");
-
 #endif
                     } else if constexpr (std::is_same_v<T, cartesi::virtio_net_tuntap_config>) {
 #ifdef HAVE_TUNTAP
@@ -465,7 +467,6 @@ machine::machine(const machine_config &c, const machine_runtime_config &r) : m_c
                         vdev = std::make_unique<virtio_net>(m_vdevs.size(),
                             std::make_unique<virtio_net_carrier_tuntap>(vdev_config.iface));
 #else
-
                         throw std::invalid_argument("virtio network TUN/TAP device is unsupported in this platform");
 #endif
                     } else {
@@ -477,6 +478,22 @@ machine::machine(const machine_config &c, const machine_runtime_config &r) : m_c
                     m_vdevs.push_back(std::move(vdev));
                 },
                 vdev_config_entry);
+        }
+    } else {
+        // When no virtio devices are configured, add 8 default virtio-mmio devices
+        for (uint32_t i = 0; i < 8; i++) {
+            // Create a new virtio-mmio device with default features
+            auto vdev = std::make_unique<virtio_mmio_device>(
+                i,                    // virtio_idx
+                this                  // machine pointer for callback
+            );
+
+            // Register the device's PMA entry
+            const uint64_t virtio_base = PMA_FIRST_VIRTIO_START + (i * PMA_VIRTIO_LENGTH);
+            register_pma_entry(
+                make_virtio_pma_entry(virtio_base, PMA_VIRTIO_LENGTH, 
+                    "VirtIO-MMIO device " + std::to_string(i), &virtio_mmio_driver, vdev.get()));
+            m_vmdevs.push_back(std::move(vdev));
         }
     }
 

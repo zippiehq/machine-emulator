@@ -356,6 +356,8 @@ LIBCARTESI_OBJS:= \
 	virtio-net.o \
 	virtio-net-carrier-tuntap.o \
 	virtio-net-carrier-slirp.o \
+	virtio-mmio-driver.o \
+	virtio-mmio-device.o \
 	dtb.o \
 	os.o \
 	htif.o \

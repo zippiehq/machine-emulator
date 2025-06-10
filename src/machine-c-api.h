@@ -298,6 +298,30 @@ typedef uint8_t cm_hash[CM_HASH_SIZE];
 /// \details It's used only as an opaque handle to pass machine objects through the C API.
 typedef struct cm_machine cm_machine;
 
+/// \brief MMIO callback function type
+/// \param device_index Index of the virtio device (0-7)
+/// \param offset Offset within the device's MMIO region
+/// \param data Pointer to data being written (for writes) or where to store read data (for reads)
+/// \param length Length of data in bytes
+/// \param is_write True if this is a write operation, false for read
+/// \param user_data User data passed to cm_set_mmio_callback
+/// \returns 0 for success, non-zero for error
+typedef int (*cm_mmio_callback)(uint8_t device_index, uint64_t offset, uint8_t *data, uint64_t length, bool is_write, void *user_data);
+
+/// \brief Sets the MMIO callback for a machine
+/// \param m Pointer to a non-empty machine object (holds a machine instance)
+/// \param callback The callback function to be called on MMIO access
+/// \param user_data User data to be passed to the callback
+/// \returns 0 for success, non zero code for error
+CM_API cm_error cm_set_mmio_callback(cm_machine *m, cm_mmio_callback callback, void *user_data);
+
+/// \brief Gets the current MMIO callback for a machine
+/// \param m Pointer to a non-empty machine object (holds a machine instance)
+/// \param callback Receives the current callback function
+/// \param user_data Receives the current user data
+/// \returns 0 for success, non zero code for error
+CM_API cm_error cm_get_mmio_callback(const cm_machine *m, cm_mmio_callback *callback, void **user_data);
+
 // -----------------------------------------------------------------------------
 // API functions
 // -----------------------------------------------------------------------------

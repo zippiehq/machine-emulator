@@ -254,6 +254,16 @@ public:
         return do_is_jsonrpc_virtual_machine();
     }
 
+    /// \brief Sets the MMIO callback
+    void set_mmio_callback(cm_mmio_callback callback, void* user_data) {
+        do_set_mmio_callback(callback, user_data);
+    }
+
+    /// \brief Gets the MMIO callback
+    void get_mmio_callback(cm_mmio_callback& callback, void*& user_data) const {
+        do_get_mmio_callback(callback, user_data);
+    }
+
 private:
     virtual i_virtual_machine *do_clone_empty() const = 0;
     virtual bool do_is_empty() const = 0;
@@ -300,6 +310,8 @@ private:
     virtual bool do_is_jsonrpc_virtual_machine() const {
         return false;
     }
+    virtual void do_set_mmio_callback(cm_mmio_callback callback, void* user_data) = 0;
+    virtual void do_get_mmio_callback(cm_mmio_callback& callback, void*& user_data) const = 0;
 };
 
 } // namespace cartesi
